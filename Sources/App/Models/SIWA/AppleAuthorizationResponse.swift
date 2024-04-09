@@ -3,12 +3,9 @@ import Foundation
 struct AppleAuthorizationResponse: Decodable {
 
   struct User: Decodable {
-    struct Name: Decodable {
-      let firstName: String?
-      let lastName: String?
-    }
+
     let email: String
-    let name: Name?
+
   }
 
   let code: String

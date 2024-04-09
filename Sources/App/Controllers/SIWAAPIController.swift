@@ -11,8 +11,6 @@ import Vapor
 struct SIWAAPIController {
 
   struct SIWARequestBody: Content {
-    let firstName: String?
-    let lastName: String?
     let appleIdentityToken: String
   }
 
@@ -26,23 +24,17 @@ struct SIWAAPIController {
       if let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) {
         return try await SIWAAPIController.signIn(
           appleIdentityToken: appleIdentityToken,
-          firstName: userBody.firstName,
-          lastName: userBody.lastName,
           req: req
         )
       } else {
         return try await SIWAAPIController.signUp(
           appleIdentityToken: appleIdentityToken,
-          firstName: userBody.firstName,
-          lastName: userBody.lastName,
           req: req
         )
       }
     }
     static func signUp(
       appleIdentityToken: AppleIdentityToken,
-      firstName: String? = nil,
-      lastName: String? = nil,
       req: Request
     ) async throws -> UserResponse {
       guard let email = appleIdentityToken.email else {
@@ -53,8 +45,6 @@ struct SIWAAPIController {
 
       let user = User(
         email: email,
-        firstName: firstName,
-        lastName: lastName,
         appleUserIdentifier: appleIdentityToken.subject.value
       )
 
@@ -69,19 +59,15 @@ struct SIWAAPIController {
 
     static func signIn(
       appleIdentityToken: AppleIdentityToken,
-      firstName: String? = nil,
-      lastName: String? = nil,
       req: Request
     ) async throws -> UserResponse {
         guard let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) else {
             throw UserError.siwaInvalidState
         }
-      if let email = appleIdentityToken.email {
-        user.email = email
-        user.firstName = firstName
-        user.lastName = lastName
-        try await user.update(on: req.db)
-      }
+//        if let email = appleIdentityToken.email {
+//        user.email = email
+//        try await user.update(on: req.db)
+//      }
         var accessToken: Token
         let existingToken = try await Token.query(on: req.db)
             .filter(\.$user.$id == user.id! ) // User 모델과 연관된 키를 사용하여 필터
@@ -93,7 +79,7 @@ struct SIWAAPIController {
         } else {
             accessToken = existingToken!
         }
-      return try .init(accessToken: accessToken, user: user)
+        return try .init(accessToken: accessToken, user: user)
     }
 }
 

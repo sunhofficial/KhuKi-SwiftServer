@@ -37,8 +37,8 @@ final class Token: Model {
 
 // MARK: - ModelTokenAuthenticatable
 extension Token: ModelTokenAuthenticatable {
-  static let valueKey = \Token.$value
-  static let userKey = \Token.$user
+  static let valueKey = \Token.$value //이게 bearar authentication heaer
+    static let userKey = \Token.$user //이게 UserModel을 볼수 있음.
 
   var isValid: Bool {
     guard let expiryDate = expiresAt else {

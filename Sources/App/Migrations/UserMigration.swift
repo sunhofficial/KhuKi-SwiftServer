@@ -6,8 +6,6 @@ struct UserMigration: Migration {
         return database.schema(User.schema)
             .id()
             .field("email", .string, .required)
-            .field("firstName", .string)
-            .field("lastName", .string)
             .field("appleUserIdentifier", .string, .required)
             .create()
     }

@@ -44,15 +44,13 @@ final class SIWAViewController {
       if let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) {
         return try await SIWAAPIController.signIn(
           appleIdentityToken: appleIdentityToken,
-          firstName: auth.user?.name?.firstName,
-          lastName: auth.user?.name?.lastName,
+
           req: req
         )
       } else {
         return try await SIWAAPIController.signUp(
           appleIdentityToken: appleIdentityToken,
-          firstName: auth.user?.name?.firstName,
-          lastName: auth.user?.name?.lastName,
+
           req: req
         )
       }

@@ -16,72 +16,48 @@ final class User : Model, Content {
     }
     @ID(key: .id)
     var id: UUID?
-
     @Field(key: "email")
     var email: String
     @Field(key: "appleUserIdentifier")
     var appleUserIdentifier: String?
-    @Field(key: "firstName")
-    var firstName: String?
+    @OptionalField(key: "gender")
+    var gender: String?
 
-    @Field(key: "lastName")
-    var lastName: String?
-//    @Field(key: "gender")
-//    var gender: String?
-//
-//    @Field(key: "age")
-//    var age: Int?
-//
-//    @Field(key: "distance")
-//    var distance: Int?
-//
-//    @Field(key: "openID")
-//    var openId: String?
-//
-//    @Field(key: "restraunt")
-//    var restraunt: String?
-//
-//    @Field(key: "selfInfo")
-//    var selfInfo: String?
+    @OptionalField(key: "age") //0->
+    var age: Int?
 
+    @OptionalField(key: "distance") //0 , 1, 2
+    var distance: Int?
+
+    @OptionalField(key: "openID")
+    var openId: String?
+
+    @OptionalField(key: "restaruant")
+    var restaruant: String?
+
+    @OptionalField(key: "selfInfo")
+    var selfInfo: String?
 
     init(
       id: UUID? = nil,
       email: String,
-      firstName: String? = nil,
-      lastName: String? = nil,
+
       appleUserIdentifier: String
     ) {
       self.id = id
       self.email = email
-      self.firstName = firstName
-      self.lastName = lastName
       self.appleUserIdentifier = appleUserIdentifier
     }
-//    init(id: UUID? = nil, email: String, gender: String, age: Int, distance: Int, openId: String, restraunt: String, selfInfo: String) {
-//        self.id = id
-//        self.gender = gender
-//        self.age = age
-//        self.email = email
-//        self.distance = distance
-//        self.openId = openId
-//        self.restraunt = restraunt
-//        self.selfInfo = selfInfo
-//    }
 
 }
 extension User: Authenticatable {
   struct Public: Content {
     let id: UUID
     let email: String
-    let firstName: String?
-    let lastName: String?
 
     init(user: User) throws {
       self.id = try user.requireID()
       self.email = user.email
-      self.firstName = user.firstName
-      self.lastName = user.lastName
     }
   }
 
