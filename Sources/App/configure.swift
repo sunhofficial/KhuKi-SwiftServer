@@ -23,6 +23,7 @@ public func configure(_ app: Application) async throws {
     //register controllers
     app.migrations.add(UserMigration())
     app.migrations.add(TokenMigration())
+    app.migrations.add(CookieMigration())
     try app.autoMigrate().wait()
     try routes(app)
 }

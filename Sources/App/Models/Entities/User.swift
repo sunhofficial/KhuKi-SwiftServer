@@ -16,10 +16,13 @@ final class User : Model, Content {
     }
     @ID(key: .id)
     var id: UUID?
+
     @Field(key: "email")
     var email: String
+
     @Field(key: "appleUserIdentifier")
     var appleUserIdentifier: String?
+
     @OptionalField(key: "gender")
     var gender: String?
 
@@ -37,11 +40,19 @@ final class User : Model, Content {
 
     @OptionalField(key: "selfInfo")
     var selfInfo: String?
+    
+    @OptionalField(key: "haveCookie")
+    var haveCookie: Bool?
+
+    @OptionalField(key: "myCookie")
+    var myCookie: Cookie?
+
+    @OptionalField(key: "pickedCookies")
+    var pickedCookies: [Cookie]?
 
     init(
       id: UUID? = nil,
       email: String,
-
       appleUserIdentifier: String
     ) {
       self.id = id
@@ -80,12 +91,12 @@ extension User {
 
 // MARK: - Helpers
 extension User {
-  static func assertUniqueEmail(_ email: String, req: Request) async throws {
-      guard let user = try await findByEmail(email, req: req) else {
-          throw UserError.emailTaken
-    }
-//return true
-  }
+//  static func assertUniqueEmail(_ email: String, req: Request) async throws {
+//      guard let user = try await findByEmail(email, req: req) else {
+//          throw UserError.emailTaken
+//    }
+////return true
+//  }
 
   static func findByEmail(_ email: String, req: Request) async throws -> User? {
     return try await User.query(on: req.db)

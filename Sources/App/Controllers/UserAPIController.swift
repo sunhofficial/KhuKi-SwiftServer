@@ -25,6 +25,18 @@ struct UserAPIController {
         try await user.save(on: req.db)
         return user
     }
+    func deleteUser(req: Request) async throws -> HTTPStatus {
+        let user = try req.auth.require(User.self)
+        try await user.delete(on: req.db)
+        return .ok
+    }
+    func postCookie(req: Request) async throws -> HTTPStatus {
+        let user = try req.auth.require(User.self)
+        let postRequest = try req.content.decode(Cookie.self)
+        user.myCookie = postRequest
+        try await user.save(on: req.db)
+        return .ok
+    }
 }
 
 // MARK: - RouteCollection
@@ -32,5 +44,6 @@ extension UserAPIController: RouteCollection {
   func boot(routes: RoutesBuilder) throws {
       routes.put("firstprofile", use: updatefirstProfile)
       routes.put("secondprofile", use: updateSecondProfile)
+      routes.post("cookie", use: postCookie)
   }
 }

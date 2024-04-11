@@ -17,3 +17,5 @@ struct ProfileUpdateRequestSecond: Content {
     var restaruant: String
     var selfInfo: String
 }
+
+

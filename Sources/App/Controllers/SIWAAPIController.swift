@@ -56,7 +56,7 @@ struct SIWAAPIController {
       try await accessToken.save(on: req.db)
       return try .init(accessToken: accessToken, user: user)
     }
-
+    
     static func signIn(
       appleIdentityToken: AppleIdentityToken,
       req: Request
@@ -81,6 +81,7 @@ struct SIWAAPIController {
         }
         return try .init(accessToken: accessToken, user: user)
     }
+    
 }
 
 // MARK: - RouteCollection
