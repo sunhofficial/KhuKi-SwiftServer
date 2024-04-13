@@ -87,6 +87,7 @@ extension User {
       expiresAt: expiryDate
     )
   }
+    
 }
 
 // MARK: - Helpers

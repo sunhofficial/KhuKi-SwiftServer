@@ -13,14 +13,26 @@ final class Cookie: Model {
     init() {}
     @ID(key: .id)
     var id: UUID?
+    
+//    @Parent(key: "userID")
+//    var user: User
 
     @Field(key: "info")
     var info: String
 
     @Field(key: "type")
     var type: Int
-    init(info: String, type: Int) {
+
+    @Field(key: "gender")
+    var gender: String
+    // User ID를 저장할 옵셔널 필드 추가
+       @OptionalField(key: "userID")
+       var userID: UUID?
+
+    init(info: String,userID: UUID?, type: Int, gender: String) {
         self.info = info
+        self.userID = userID
         self.type = type
+        self.gender = gender
     }
 }
