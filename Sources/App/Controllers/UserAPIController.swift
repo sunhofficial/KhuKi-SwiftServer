@@ -34,19 +34,24 @@ struct UserAPIController {
         let user = try req.auth.require(User.self)
         let postRequest = try req.content.decode(Cookie.self)
         user.myCookie = postRequest
-        print(user.id)
-        print(try user.requireID())
-        let newCookie = Cookie(info: postRequest.info, userID: try user.requireID(), type: postRequest.type, gender: postRequest.gender)
+        let newCookie = Cookie(id:  try user.requireID(),info: postRequest.info,  type: postRequest.type, gender: postRequest.gender)
         try await user.save(on: req.db)
         try await newCookie.save(on: req.db)
         return .ok
     }
-//    func putCookie(req: Request) async throws -> Cookie {
-//        let user = try req.auth.require(User.self)
-//        let putRequest = try req.content.decode(Cookie.self)
-//        user.myCookie = putRequest
-//        try await
-//    }
+    func putCookie(req: Request) async throws -> Cookie {
+        let user = try req.auth.require(User.self)
+        let putRequest = try req.content.decode(UpdateCookie.self)
+        guard let myCookie = try await Cookie.find(user.id, on: req.db) else {
+            throw Abort(.notFound, reason: "없어 id가 임마")
+        }
+        myCookie.info = putRequest.info
+        myCookie.type = putRequest.type
+        user.myCookie = myCookie
+        try await user.update(on: req.db)
+        try await myCookie.update(on: req.db)
+        return myCookie
+    }
 }
 
 // MARK: - RouteCollection
@@ -56,6 +61,7 @@ extension UserAPIController: RouteCollection {
       routes.put("profile","second", use: updateSecondProfile)
       routes.delete("delete", use: deleteUser)
       routes.post("cookie", use: postCookie)
-      routes.put("updatecookie", use: postCookie)
+      routes.put("cookie", use: putCookie)
+
   }
 }

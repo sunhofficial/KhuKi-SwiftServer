@@ -26,14 +26,18 @@ final class Cookie: Model, Content {
     @Field(key: "gender")
     var gender: String
     // User ID를 저장할 옵셔널 필드 추가
-       @OptionalField(key: "userID")
-       var userID: UUID?
+//
 
-    init(id: UUID? = nil, info: String,userID: UUID?, type: Int, gender: String) {
+    init(id: UUID? = nil, info: String, type: Int, gender: String) {
         self.id = id
         self.info = info
-        self.userID = userID
+//        self.userID = userID
         self.type = type
         self.gender = gender
     }
+}
+
+struct UpdateCookie: Codable {
+    var info: String
+    var type: Int
 }
