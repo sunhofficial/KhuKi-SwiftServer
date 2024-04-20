@@ -5,9 +5,9 @@ func routes(_ app: Application) throws {
     try unprotectedAPI.grouped("auth", "siwa").register(collection: SIWAAPIController())
     let tokenProtectedAPI = unprotectedAPI.grouped(Token.authenticator()) //이게 여기를 통하는 거는 모두 authenticated user가 있어야한다는뜻.
     try tokenProtectedAPI.grouped("user").register(collection: UserAPIController())
-
-    let unprotectedWeb = app.grouped("web")
-    try unprotectedWeb.grouped("auth", "siwa").register(collection: SIWAViewController())
+    try tokenProtectedAPI.grouped("cookies").register(collection: CookieAPIController())
+//    let unprotectedWeb = app.grouped("web")
+//    try unprotectedWeb.grouped("auth", "siwa").register(collection: SIWAViewController())
 //   try app.register(collection: MoviesController())
 //    app.middleware.use(LogMiddleware())
 //    // /members

@@ -8,7 +8,7 @@
 import Foundation
 import Vapor
 import Fluent
-final class Cookie: Model {
+final class Cookie: Model, Content {
     static let schema = "cookie"
     init() {}
     @ID(key: .id)
@@ -29,7 +29,8 @@ final class Cookie: Model {
        @OptionalField(key: "userID")
        var userID: UUID?
 
-    init(info: String,userID: UUID?, type: Int, gender: String) {
+    init(id: UUID? = nil, info: String,userID: UUID?, type: Int, gender: String) {
+        self.id = id
         self.info = info
         self.userID = userID
         self.type = type
