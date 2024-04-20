@@ -47,10 +47,15 @@ struct UserAPIController {
         }
         myCookie.info = putRequest.info
         myCookie.type = putRequest.type
+//       
         user.myCookie = myCookie
         try await user.update(on: req.db)
         try await myCookie.update(on: req.db)
         return myCookie
+    }
+    func getPickedCookies(req: Request) async throws -> [Cookie]? {
+        let user = try req.auth.require(User.self)
+        return user.pickedCookies
     }
 }
 
@@ -62,6 +67,7 @@ extension UserAPIController: RouteCollection {
       routes.delete("delete", use: deleteUser)
       routes.post("cookie", use: postCookie)
       routes.put("cookie", use: putCookie)
+//      routes.get("cookie","picked")
 
   }
 }
