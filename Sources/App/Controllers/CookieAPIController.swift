@@ -27,21 +27,34 @@ struct CookieAPIController {
     }
     func postPickCookie(req: Request) async throws -> GeneralResponse<PostPickResponse> {
         guard let cookieIDString = try? await req.content.get(String.self, at: "id"),
-                 let cookieID = UUID(uuidString: cookieIDString) else {
-               throw Abort(.badRequest, reason: "Invalid or missing cookie ID.")
-           }
+              let cookieID = UUID(uuidString: cookieIDString) else {
+            throw Abort(.badRequest, reason: "Invalid or missing cookie ID.")
+        }
+        let pickuser = try req.auth.require(User.self)
+        guard let cookieItem = try await Cookie.query(on: req.db)
+            .filter(\._$id == cookieID)
+            .first()
+        else {
+            throw Abort(.notFound)
+        }
 
-        guard let user = try await User.query(on: req.db)
+
+        guard let pickeduser = try await User.query(on: req.db)
             .filter(\._$id == cookieID)
             .first() else {
             throw Abort(.notFound)
         }
+        if let pickeduserCookie = pickeduser.myCookie {
+            pickuser.pickedCookies = (pickuser.pickedCookies ?? []) + [pickeduserCookie]
+        }
 
-        guard let openID = user.openId, let selfInfo = user.selfInfo else {
+        guard let openID = pickeduser.openId, let selfInfo = pickeduser.selfInfo else {
             throw Abort(.internalServerError)
         }
-        user.myCookie = nil
-       try await user.update(on: req.db)
+        try await cookieItem.delete(on: req.db)
+        pickeduser.myCookie = nil
+        try await pickuser.update(on: req.db)
+        try await pickeduser.update(on: req.db)
         return GeneralResponse(status: 200, message: "success", data: PostPickResponse(openID: openID, selfInfo: selfInfo))
     }
 }
@@ -50,7 +63,7 @@ extension CookieAPIController: RouteCollection {
         routes.get( use: getAllCookies)
         routes.post("pick", use: postPickCookie)
     }
-    
+
 
 
 }

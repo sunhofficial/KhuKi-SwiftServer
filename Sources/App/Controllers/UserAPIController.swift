@@ -67,7 +67,6 @@ struct UserAPIController {
 
             user.myCookie = postRequest
             let newCookie = Cookie(id: try user.requireID(), info: postRequest.info, type: postRequest.type, gender: postRequest.gender)
-
             // 3. 데이터베이스 저장 오류 처리
             try await user.save(on: req.db)
             try await newCookie.save(on: req.db)

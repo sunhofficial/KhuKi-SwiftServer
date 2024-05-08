@@ -26,7 +26,9 @@ final class Cookie: Model, Content {
     @Field(key: "gender")
     var gender: String
     // User ID를 저장할 옵셔널 필드 추가
-//
+    @Field(key: "userID")
+        var userID: UUID?
+
 
     init(id: UUID? = nil, info: String, type: Int, gender: String) {
         self.id = id
@@ -34,6 +36,7 @@ final class Cookie: Model, Content {
 //        self.userID = userID
         self.type = type
         self.gender = gender
+        self.userID = id
     }
 }
 
