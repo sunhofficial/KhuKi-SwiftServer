@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by 235 on 4/13/24.
 //
@@ -24,15 +24,33 @@ struct CookieAPIController {
         else {
             return GeneralResponse(status: 200, message: "success", data: data)
         }
+    }
+    func postPickCookie(req: Request) async throws -> GeneralResponse<PostPickResponse> {
+        guard let cookieIDString = try? await req.content.get(String.self, at: "id"),
+                 let cookieID = UUID(uuidString: cookieIDString) else {
+               throw Abort(.badRequest, reason: "Invalid or missing cookie ID.")
+           }
 
-//            .all()
+        guard let user = try await User.query(on: req.db)
+            .filter(\._$id == cookieID)
+            .first() else {
+            throw Abort(.notFound)
+        }
 
+        guard let openID = user.openId, let selfInfo = user.selfInfo else {
+            throw Abort(.internalServerError)
+        }
+        user.myCookie = nil
+       try await user.update(on: req.db)
+        return GeneralResponse(status: 200, message: "success", data: PostPickResponse(openID: openID, selfInfo: selfInfo))
     }
 }
 extension CookieAPIController: RouteCollection {
     func boot(routes:RoutesBuilder) throws {
         routes.get( use: getAllCookies)
+        routes.post("pick", use: postPickCookie)
     }
     
-    
+
+
 }

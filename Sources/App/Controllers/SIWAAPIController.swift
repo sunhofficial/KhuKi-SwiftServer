@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by 235 on 4/3/24.
 //
@@ -10,64 +10,57 @@ import Vapor
 
 struct SIWAAPIController {
 
-  struct SIWARequestBody: Content {
-    let appleIdentityToken: String
-  }
+    struct SIWARequestBody: Content {
+        let appleIdentityToken: String
+    }
 
     func authHandler(req: Request) async throws -> UserResponse {
-      let userBody = try req.content.decode(SIWARequestBody.self)
-      let appleIdentityToken = try await req.jwt.apple.verify(
-        userBody.appleIdentityToken,
-        applicationIdentifier: ProjectConfig.SIWA.applicationIdentifier
-      )
-        
-      if let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) {
-        return try await SIWAAPIController.signIn(
-          appleIdentityToken: appleIdentityToken,
-          req: req
+        let userBody = try req.content.decode(SIWARequestBody.self)
+        let appleIdentityToken = try await req.jwt.apple.verify(
+            userBody.appleIdentityToken,
+            applicationIdentifier: ProjectConfig.SIWA.applicationIdentifier
         )
-      } else {
-        return try await SIWAAPIController.signUp(
-          appleIdentityToken: appleIdentityToken,
-          req: req
-        )
-      }
+        if let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) {
+            return try await SIWAAPIController.signIn(
+                appleIdentityToken: appleIdentityToken,
+                req: req
+            )
+        } else {
+            return try await SIWAAPIController.signUp(
+                appleIdentityToken: appleIdentityToken,
+                req: req
+            )
+        }
     }
     static func signUp(
-      appleIdentityToken: AppleIdentityToken,
-      req: Request
+        appleIdentityToken: AppleIdentityToken,
+        req: Request
     ) async throws -> UserResponse {
-      guard let email = appleIdentityToken.email else {
-        throw UserError.siwaEmailMissing
-      }
+        guard let email = appleIdentityToken.email else {
+            throw UserError.siwaEmailMissing
+        }
+        let user = User(
+            email: email,
+            appleUserIdentifier: appleIdentityToken.subject.value
+        )
 
-//      try await User.assertUniqueEmail(email, req: req)
+        try await user.save(on: req.db)
+        guard let accessToken = try? user.createAccessToken(req: req) else {
+            throw Abort(.internalServerError)
+        }
 
-      let user = User(
-        email: email,
-        appleUserIdentifier: appleIdentityToken.subject.value
-      )
-
-      try await user.save(on: req.db)
-      guard let accessToken = try? user.createAccessToken(req: req) else {
-        throw Abort(.internalServerError)
-      }
-
-      try await accessToken.save(on: req.db)
-      return try .init(accessToken: accessToken, user: user)
+        try await accessToken.save(on: req.db)
+        return try .init(accessToken: accessToken, user: user)
     }
-    
+
     static func signIn(
-      appleIdentityToken: AppleIdentityToken,
-      req: Request
+        appleIdentityToken: AppleIdentityToken,
+        req: Request
     ) async throws -> UserResponse {
         guard let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) else {
             throw UserError.siwaInvalidState
         }
-//        if let email = appleIdentityToken.email {
-//        user.email = email
-//        try await user.update(on: req.db)
-//      }
+
         var accessToken: Token
         let existingToken = try await Token.query(on: req.db)
             .filter(\.$user.$id == user.id! ) // User 모델과 연관된 키를 사용하여 필터
@@ -81,12 +74,12 @@ struct SIWAAPIController {
         }
         return try .init(accessToken: accessToken, user: user)
     }
-    
+
 }
 
 // MARK: - RouteCollection
 extension SIWAAPIController: RouteCollection {
-  func boot(routes: RoutesBuilder) throws {
-    routes.post(use: authHandler)
-  }
+    func boot(routes: RoutesBuilder) throws {
+        routes.post(use: authHandler)
+    }
 }
