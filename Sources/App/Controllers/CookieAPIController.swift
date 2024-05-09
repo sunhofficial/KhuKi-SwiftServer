@@ -39,6 +39,11 @@ struct CookieAPIController {
             throw Abort(.badRequest, reason: "Invalid or missing cookie ID.")
         }
         let pickuser = try req.auth.require(User.self)
+        if let lastPickTime = pickuser.lastPicked {
+            if Date().timeIntervalSince(lastPickTime) < 86400 {
+                throw CookieError.alreadyPicked
+            }
+        }
         guard let cookieItem = try await Cookie.query(on: req.db)
             .filter(\._$id == cookieID)
             .first()
@@ -58,7 +63,8 @@ struct CookieAPIController {
             throw Abort(.internalServerError)
         }
         try await cookieItem.delete(on: req.db)
-        pickeduser.myCookie = nil
+//        pickeduser.myCookie = nil
+        pickuser.lastPicked = Date()
         try await pickuser.update(on: req.db)
         try await pickeduser.update(on: req.db)
         return GeneralResponse(status: 200, message: "success", data: PostPickResponse(openID: openID, selfInfo: selfInfo))
@@ -68,7 +74,6 @@ extension CookieAPIController: RouteCollection {
     func boot(routes:RoutesBuilder) throws {
         routes.get( use: getAllCookies)
         routes.post("pick", use: postPickCookie)
-//        routes.get("detail", use: getDetailCookie)
     }
 
 
