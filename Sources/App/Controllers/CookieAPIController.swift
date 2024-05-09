@@ -14,21 +14,24 @@ struct CookieAPIController {
         let user = try req.auth.require(User.self)
         let genderFilter = user.gender == "man" ? "girl" : "man"
         let page = (req.query[Int.self, at: "page"] ?? 1)
-        let data =  try await Cookie.query(on: req.db)
-            .filter(\.$gender == genderFilter)
-            .with(\.$user)
-        //http://localhost:8080/api/v1/models?page=1&per=10
-//            .all()
-            .paginate(PageRequest(page: page, per: 9)).map { page in
-                GetCookiesResponse(age: page.user.age!, distance: page.user.distance!, restarunat: page.user.restaruant!, info: page.info, type: page.type)
+        let haveMyCookie = try await Cookie.query(on: req.db)
+            .filter(\.$user.$id == user.id!)
+            .count()
+        if haveMyCookie > 0 {
+            let data =  try await Cookie.query(on: req.db)
+                .filter(\.$gender == genderFilter)
+                .with(\.$user)
+            //http://localhost:8080/api/v1/models?page=1&per=10
+                .paginate(PageRequest(page: page, per: 9)).map { page in
+                    GetCookiesResponse(age: page.user.age!, distance: page.user.distance!, restarunat: page.user.restaruant!, info: page.info, type: page.type)
+                }
+            if data.items.isEmpty    {
+                return GeneralResponse(status: 400  , message: "No Cookies yet",data: data)
             }
-        if data.items.isEmpty    {
-            return GeneralResponse(status: 400  , message: "No Cookies yet",data: data)
+            else {return GeneralResponse(status: 200, message: "success",data: data)}
+        } else {
+            throw CookieError.noMyCookie
         }
-        else {return GeneralResponse(status: 200, message: "success",data: data)}
-
-
-
     }
     func postPickCookie(req: Request) async throws -> GeneralResponse<PostPickResponse> {
         guard let cookieIDString = try? await req.content.get(String.self, at: "id"),
