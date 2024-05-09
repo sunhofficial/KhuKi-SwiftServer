@@ -26,17 +26,16 @@ final class Cookie: Model, Content {
     @Field(key: "gender")
     var gender: String
     // User ID를 저장할 옵셔널 필드 추가
-    @Field(key: "userID")
-        var userID: UUID?
+    @Parent(key: "userID")
+    var user: User
 
 
-    init(id: UUID? = nil, info: String, type: Int, gender: String) {
+    init(id: UUID? = nil, info: String, type: Int, gender: String, user : User) {
         self.id = id
         self.info = info
-//        self.userID = userID
         self.type = type
         self.gender = gender
-        self.userID = id
+        self.$user.id = user.id!
     }
 }
 

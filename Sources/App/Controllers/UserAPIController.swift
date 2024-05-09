@@ -63,13 +63,14 @@ struct UserAPIController {
             let user = try req.auth.require(User.self)
 
             // 2. 요청 바디 디코딩 오류 처리
-            let postRequest = try req.content.decode(Cookie.self)
+            let postRequest = try req.content.decode(PostCookieRequest.self)
 
-            user.myCookie = postRequest
-            let newCookie = Cookie(id: try user.requireID(), info: postRequest.info, type: postRequest.type, gender: postRequest.gender)
+
+            let cookie = Cookie(id: try user.requireID(), info: postRequest.info, type: postRequest.type, gender: postRequest.gender, user: user)
             // 3. 데이터베이스 저장 오류 처리
-            try await user.save(on: req.db)
-            try await newCookie.save(on: req.db)
+//            user.myCookie = cookie
+//            try await user.save(on: req.db)
+            try await cookie.save(on: req.db)
 
             return GeneralResponse(status: 200, message: "쿠키생성성공")
         } catch DecodingError.typeMismatch(_, let context) {

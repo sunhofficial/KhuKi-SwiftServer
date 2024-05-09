@@ -2,7 +2,6 @@ import Vapor
 import Fluent
 import FluentMongoDriver
 import Leaf
-import Ferno
 
 
 // configures your application
@@ -10,12 +9,7 @@ public func configure(_ app: Application) async throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     // register routes
-    let fernoConfiguration = FernoDefaultConfiguration(
-        basePath: "database-url",
-        email: "service-account-email",
-        privateKey: "private-key"
-    )
-    app.ferno.use(.default(fernoConfiguration))
+
     app.middleware.use(SessionsMiddleware(session: app.sessions.driver))
     app.views.use(.leaf)
     app.leaf.cache.isEnabled = app.environment.isRelease
