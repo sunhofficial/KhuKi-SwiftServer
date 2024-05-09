@@ -66,12 +66,14 @@ struct SIWAAPIController {
             .filter(\.$user.$id == user.id! ) // User 모델과 연관된 키를 사용하여 필터
             .first()
         let sevenDaysLater = Calendar.current.date(byAdding: .day, value: 7, to: Date())!
-        if let existingToken = existingToken, let expiresAt = existingToken.expiresAt, expiresAt < sevenDaysLater {
-            accessToken = try user.createAccessToken(req: req)
-            try await accessToken.save(on: req.db)
-        } else {
-            accessToken = existingToken!
-        }
+        if let existingToken = existingToken, let expiresAt = existingToken.expiresAt, expiresAt >= sevenDaysLater {
+               // If the token exists and is valid for more than 7 days from now, reuse it.
+               accessToken = existingToken
+           } else {
+               // Otherwise, create a new access token and save it.
+               accessToken = try user.createAccessToken(req: req)
+               try await accessToken.save(on: req.db)
+           }
         return try .init(accessToken: accessToken, user: user)
     }
 

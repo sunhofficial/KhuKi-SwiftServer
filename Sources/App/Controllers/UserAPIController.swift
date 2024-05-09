@@ -95,10 +95,10 @@ struct UserAPIController {
             // 쿠키 업데이트
             myCookie.info = putRequest.info
             myCookie.type = putRequest.type
-            user.myCookie = myCookie
+//            user.myCookie = myCookie
 
             // 사용자 및 쿠키 업데이트 저장
-            try await user.update(on: req.db)
+//            try await user.update(on: req.db)
             try await myCookie.update(on: req.db)
 
             return GeneralResponse(status: 200, message: "쿠키 업데이트 성공")

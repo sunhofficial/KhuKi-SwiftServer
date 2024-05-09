@@ -76,6 +76,4 @@ extension CookieAPIController: RouteCollection {
         routes.post("pick", use: postPickCookie)
     }
 
-
-
 }
