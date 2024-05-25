@@ -48,7 +48,7 @@
         var myCookie: Cookie?
 
         @OptionalField(key: "pickedCookies")
-        var pickedCookies: [Cookie]?
+        var pickedCookies: [PickedUserResponse]?
 
         @OptionalField(key: "lastPickedTime")
         var lastPicked: Date?

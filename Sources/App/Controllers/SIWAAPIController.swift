@@ -14,28 +14,32 @@ struct SIWAAPIController {
         let appleIdentityToken: String
     }
 
-    func authHandler(req: Request) async throws -> UserResponse {
-        let userBody = try req.content.decode(SIWARequestBody.self)
-        let appleIdentityToken = try await req.jwt.apple.verify(
-            userBody.appleIdentityToken,
-            applicationIdentifier: ProjectConfig.SIWA.applicationIdentifier
-        )
-        if let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) {
-            return try await SIWAAPIController.signIn(
-                appleIdentityToken: appleIdentityToken,
-                req: req
+    func authHandler(req: Request) async throws -> GeneralResponse<UserResponse> {
+
+            let userBody = try req.content.decode(SIWARequestBody.self)
+            print(userBody)
+            let appleIdentityToken = try await req.jwt.apple.verify(
+                userBody.appleIdentityToken,
+                applicationIdentifier: ProjectConfig.SIWA.applicationIdentifier
             )
-        } else {
-            return try await SIWAAPIController.signUp(
-                appleIdentityToken: appleIdentityToken,
-                req: req
-            )
-        }
+            if let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) {
+                return try await SIWAAPIController.signIn(
+                    appleIdentityToken: appleIdentityToken,
+                    req: req
+                )
+            } else {
+                return try await SIWAAPIController.signUp(
+                    appleIdentityToken: appleIdentityToken,
+                    req: req
+                )
+            }
+
+
     }
     static func signUp(
         appleIdentityToken: AppleIdentityToken,
         req: Request
-    ) async throws -> UserResponse {
+    ) async throws -> GeneralResponse<UserResponse> {
         guard let email = appleIdentityToken.email else {
             throw UserError.siwaEmailMissing
         }
@@ -50,13 +54,13 @@ struct SIWAAPIController {
         }
 
         try await accessToken.save(on: req.db)
-        return try .init(accessToken: accessToken, user: user)
+        return try GeneralResponse(status: 200, message: "회원가입성공", data: UserResponse(accessToken: accessToken, user: user) )
     }
 
     static func signIn(
         appleIdentityToken: AppleIdentityToken,
         req: Request
-    ) async throws -> UserResponse {
+    ) async throws -> GeneralResponse< UserResponse> {
         guard let user = try await User.findByAppleIdentifier(appleIdentityToken.subject.value, req: req) else {
             throw UserError.siwaInvalidState
         }
@@ -74,7 +78,15 @@ struct SIWAAPIController {
                accessToken = try user.createAccessToken(req: req)
                try await accessToken.save(on: req.db)
            }
-        return try .init(accessToken: accessToken, user: user)
+        let response = try UserResponse(accessToken: accessToken, user: user)
+        debugPrint(user)
+        if user.age == nil {
+            return GeneralResponse(status: 200, message: "첫번째프로필", data: response)
+        } else if user.selfInfo == nil {
+            return GeneralResponse(status: 200, message: "두번째프로필", data: response)
+        } else {
+            return GeneralResponse(status: 200, message: "로그인성공", data: response)
+        }
     }
 
 }

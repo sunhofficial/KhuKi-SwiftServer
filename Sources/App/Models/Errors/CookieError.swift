@@ -34,6 +34,4 @@ extension CookieError: AbortError {
             "새로운 쿠키를 뽑기까지 24시간이 지나야합니다."
         }
     }
-
-
 }

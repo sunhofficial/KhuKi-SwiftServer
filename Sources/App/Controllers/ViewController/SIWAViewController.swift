@@ -27,7 +27,7 @@ final class SIWAViewController {
       )
     }
 
-    func callback(req: Request) async throws -> UserResponse {
+    func callback(req: Request) async throws -> GeneralResponse<UserResponse> {
       let auth = try req.content.decode(AppleAuthorizationResponse.self)
       guard
         let sessionState = req.session.data["state"],

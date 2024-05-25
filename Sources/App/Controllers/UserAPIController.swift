@@ -52,22 +52,21 @@ struct UserAPIController {
         do {
             try await user.delete(on: req.db)
         }
-        catch let databaseError as DatabaseError {
+        catch _ as DatabaseError {
             return GeneralResponse(status: 500, message: "DB Error")
         }
         return GeneralResponse(status: 200, message: "삭제성공")
     }
     func postCookie(req: Request) async throws -> GeneralResponse<VoidContent> {
+        req.logger.info("postCookie 함수 호출됨")
         do {
             // 1. 사용자 인증 오류 처리
             let user = try req.auth.require(User.self)
 
             // 2. 요청 바디 디코딩 오류 처리
             let postRequest = try req.content.decode(PostCookieRequest.self)
-            let cookie = Cookie(id: try user.requireID(), info: postRequest.info, type: postRequest.type, gender: postRequest.gender, user: user)
-            // 3. 데이터베이스 저장 오류 처리
-//            user.myCookie = cookie
-//            try await user.save(on: req.db)
+            let cookie = Cookie(id: try user.requireID(), info: postRequest.info, type: postRequest.type, gender: user.gender!, user: user)
+
             try await cookie.save(on: req.db)
 
             return GeneralResponse(status: 200, message: "쿠키생성성공")
@@ -110,7 +109,7 @@ struct UserAPIController {
             return GeneralResponse(status: 404, message: "알 수 없는 에러")
         }
     }
-    func getPickedCookies(req: Request) async throws -> GeneralResponse<[Cookie]> {
+    func getPickedCookies(req: Request) async throws -> GeneralResponse<[PickedUserResponse]> {
         let user = try req.auth.require(User.self)
         if let pickedCookies = user.pickedCookies {
             return GeneralResponse(status: 200, message: "쿠키있음",data: pickedCookies)
@@ -120,7 +119,6 @@ struct UserAPIController {
     }
     func logout(req: Request) async throws -> GeneralResponse<VoidContent> {
         let user = try req.auth.require(User.self)
-
         // 사용자와 연관된 모든 토큰 찾기
         try await Token.query(on: req.db)
             .filter(\.$user.$id == user.requireID())
@@ -136,9 +134,10 @@ extension UserAPIController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         routes.put("profile","first", use: updatefirstProfile)
         routes.put("profile","second", use: updateSecondProfile)
+        routes.post("myCookie", use: postCookie)
         routes.delete("delete", use: deleteUser)
-        routes.post("cookie", use: postCookie)
-        routes.put("cookie", use: putCookie)
+
+        routes.put("cookie","update", use: putCookie)
         routes.get("cookie","picked", use: getPickedCookies)
         routes.post("logout", use: logout)
 

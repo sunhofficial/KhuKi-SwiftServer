@@ -9,5 +9,4 @@ import Vapor
 struct PostCookieRequest: Content {
     var info: String
     var type: Int
-    var gender: String
 }

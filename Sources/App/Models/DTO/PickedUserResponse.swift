@@ -2,15 +2,17 @@
 //  File.swift
 //  
 //
-//  Created by 235 on 5/8/24.
+//  Created by 235 on 5/10/24.
 //
 
 import Vapor
-struct GetCookiesResponse: Content {
+
+struct PickedUserResponse: Content {
     var age: Int
     var distance: Int
     var restarunat: String
     var info: String
     var type: Int
-    var cookieId: UUID
+    var openId: String
+    var selfInfo: String
 }
