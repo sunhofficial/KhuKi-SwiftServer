@@ -44,8 +44,6 @@
         @OptionalField(key: "haveCookie")
         var haveCookie: Bool?
 
-        @OptionalField(key: "myCookie")
-        var myCookie: Cookie?
 
         @OptionalField(key: "pickedCookies")
         var pickedCookies: [PickedUserResponse]?
@@ -95,12 +93,7 @@
 
     // MARK: - Helpers
     extension User {
-    //  static func assertUniqueEmail(_ email: String, req: Request) async throws {
-    //      guard let user = try await findByEmail(email, req: req) else {
-    //          throw UserError.emailTaken
-    //    }
-    ////return true
-    //  }
+
 
       static func findByEmail(_ email: String, req: Request) async throws -> User? {
         return try await User.query(on: req.db)

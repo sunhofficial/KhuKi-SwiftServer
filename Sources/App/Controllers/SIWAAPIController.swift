@@ -84,8 +84,17 @@ struct SIWAAPIController {
             return GeneralResponse(status: 200, message: "첫번째프로필", data: response)
         } else if user.selfInfo == nil {
             return GeneralResponse(status: 200, message: "두번째프로필", data: response)
-        } else {
-            return GeneralResponse(status: 200, message: "로그인성공", data: response)
+        }
+        else {
+            let haveMyCookie = try await Cookie.query(on: req.db)
+                .filter(\.$user.$id == user.id!)
+                .count() > 0
+            if haveMyCookie {
+                return GeneralResponse(status: 200, message: "로그인성공", data: response)
+            }
+            else {
+                return GeneralResponse(status: 200, message: "쿠키생성", data: response)
+            }
         }
     }
 

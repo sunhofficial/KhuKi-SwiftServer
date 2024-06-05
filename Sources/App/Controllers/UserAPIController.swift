@@ -49,6 +49,12 @@ struct UserAPIController {
     }
     func deleteUser(req: Request) async throws -> GeneralResponse<VoidContent> {
         let user = try req.auth.require(User.self)
+        if let cookie = try await Cookie.query(on: req.db)
+            .filter(\.$user.$id == user.id!)
+            .first() {
+            try await cookie.delete(on: req.db)
+        }
+
         do {
             try await user.delete(on: req.db)
         }
@@ -65,7 +71,7 @@ struct UserAPIController {
 
             // 2. 요청 바디 디코딩 오류 처리
             let postRequest = try req.content.decode(PostCookieRequest.self)
-            let cookie = Cookie(id: try user.requireID(), info: postRequest.info, type: postRequest.type, gender: user.gender!, user: user)
+            let cookie = Cookie(id: try user.requireID(), info: postRequest.info, type: postRequest.type, gender: user.gender ?? "", user: user)
 
             try await cookie.save(on: req.db)
 
