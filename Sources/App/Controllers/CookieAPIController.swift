@@ -27,11 +27,11 @@
                         GetCookiesResponse(age: page.user.age!, distance: page.user.distance!, restarunat: page.user.restaruant!, info: page.info, type: page.type, cookieId: page.id!)
                     }
                 if data.items.isEmpty    {
-                    return GeneralResponse(status: 400  , message: "No Cookies yet",data: data)
+                    return GeneralResponse(status: 402  , message: "No Cookies yet",data: data)
                 }
                 else {return GeneralResponse(status: 200, message: "success",data: data)}
             } else {
-                throw CookieError.noMyCookie
+                return GeneralResponse(status: 404, message: "no my cookie")
             }
         }
         func postPickCookie(req: Request) async throws -> GeneralResponse<PostPickResponse> {
@@ -42,7 +42,7 @@
             let pickuser = try req.auth.require(User.self)
             if let lastPickTime = pickuser.lastPicked {
                 if Date().timeIntervalSince(lastPickTime) < 86400 {
-                        throw CookieError.alreadyPicked
+                    return GeneralResponse(status: 404, message: "24hours")
                 }
             }
             guard let cookieItem = try await Cookie.query(on: req.db)
