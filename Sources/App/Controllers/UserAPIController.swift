@@ -34,7 +34,7 @@ struct UserAPIController {
             return GeneralResponse(status: 200, message: "update성공")
         } catch DecodingError.typeMismatch(_, let context) {
             // 데이터 형식이 예상과 일치하지 않는 경우
-            return GeneralResponse(status: 400, message: "데이터 형식이 일치하지 않음: \(context.debugDescription)")
+            return GeneralResponse(status: 401, message: "데이터 형식이 일치하지 않음: \(context.debugDescription)")
         } catch let databaseError as DatabaseError {
             // 데이터베이스에서 발생한 에러 처리
             return GeneralResponse(status: 500, message: "DB Error: \(databaseError)")
@@ -58,6 +58,20 @@ struct UserAPIController {
             return GeneralResponse(status: 500, message: "DB Error")
         }
         return GeneralResponse(status: 200, message: "삭제성공")
+    }
+    func logout(req: Request) async throws -> GeneralResponse<VoidContent> {
+        let user = try req.auth.require(User.self)
+        // 사용자와 연관된 모든 토큰 찾기
+        do {
+            try await Token.query(on: req.db)
+                .filter(\.$user.$id == user.requireID())
+                .delete()
+        }     catch _ as DatabaseError {
+            return GeneralResponse(status: 500, message: "DB Error")
+        }
+
+        // 로그아웃 성공 응답 보내기
+        return GeneralResponse(status: 200, message: "로그아웃되었습니다")
     }
     func postCookie(req: Request) async throws -> GeneralResponse<VoidContent> {
         req.logger.info("postCookie 함수 호출됨")
@@ -96,10 +110,10 @@ struct UserAPIController {
             // 쿠키 업데이트
             myCookie.info = putRequest.info
             myCookie.type = putRequest.type
-//            user.myCookie = myCookie
+            //            user.myCookie = myCookie
 
             // 사용자 및 쿠키 업데이트 저장
-//            try await user.update(on: req.db)
+            //            try await user.update(on: req.db)
             try await myCookie.update(on: req.db)
 
             return GeneralResponse(status: 200, message: "쿠키 업데이트 성공")
@@ -119,16 +133,7 @@ struct UserAPIController {
             return GeneralResponse(status: 402, message: "아직 쿠키가 없어요")
         }
     }
-    func logout(req: Request) async throws -> GeneralResponse<VoidContent> {
-        let user = try req.auth.require(User.self)
-        // 사용자와 연관된 모든 토큰 찾기
-        try await Token.query(on: req.db)
-            .filter(\.$user.$id == user.requireID())
-            .delete()
 
-        // 로그아웃 성공 응답 보내기
-        return GeneralResponse(status: 200, message: "로그아웃되었습니다")
-    }
 }
 
 // MARK: - RouteCollection
