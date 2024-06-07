@@ -1,110 +1,106 @@
-    //
-    //  File.swift
-    //
-    //
-    //  Created by 235 on 3/26/24.
-    //
+//
+//  File.swift
+//
+//
+//  Created by 235 on 3/26/24.
+//
 
-    import Foundation
-    import Vapor
-    import Fluent
+import Foundation
+import Vapor
+import Fluent
 
-    final class User : Model, Content {
-        static let schema: String = "users"
-        init() {
-
-        }
-        @ID(key: .id)
-        var id: UUID?
-
-        @Field(key: "email")
-        var email: String
-
-        @Field(key: "appleUserIdentifier")
-        var appleUserIdentifier: String?
-
-        @OptionalField(key: "gender")
-        var gender: String?
-
-        @OptionalField(key: "age") //0->
-        var age: Int?
-
-        @OptionalField(key: "distance") //0 , 1, 2
-        var distance: Int?
-
-        @OptionalField(key: "openID")
-        var openId: String?
-
-        @OptionalField(key: "restaruant")
-        var restaruant: String?
-
-        @OptionalField(key: "selfInfo")
-        var selfInfo: String?
-
-        @OptionalField(key: "haveCookie")
-        var haveCookie: Bool?
-
-
-        @OptionalField(key: "pickedCookies")
-        var pickedCookies: [PickedUserResponse]?
-
-        @OptionalField(key: "lastPickedTime")
-        var lastPicked: Date?
-            
-        init(
-          id: UUID? = nil,
-          email: String,
-          appleUserIdentifier: String
-        ) {
-          self.id = id
-          self.email = email
-          self.appleUserIdentifier = appleUserIdentifier
-        }
+final class User : Model, Content {
+    static let schema: String = "users"
+    init() {
 
     }
-    extension User: Authenticatable {
-      struct Public: Content {
+    @ID(key: .id)
+    var id: UUID?
+
+    @Field(key: "email")
+    var email: String
+
+    @Field(key: "appleUserIdentifier")
+    var appleUserIdentifier: String?
+
+    @OptionalField(key: "gender")
+    var gender: String?
+
+    @OptionalField(key: "age") //0->
+    var age: Int?
+
+    @OptionalField(key: "distance")
+    var distance: Int?
+
+    @OptionalField(key: "openID")
+    var openId: String?
+
+    @OptionalField(key: "restaruant")
+    var restaruant: String?
+
+    @OptionalField(key: "selfInfo")
+    var selfInfo: String?
+
+    @OptionalField(key: "haveCookie")
+    var haveCookie: Bool?
+
+
+    @OptionalField(key: "pickedCookies")
+    var pickedCookies: [PickedUserResponse]?
+
+    @OptionalField(key: "lastPickedTime")
+    var lastPicked: Date?
+
+    init(
+        id: UUID? = nil,
+        email: String,
+        appleUserIdentifier: String
+    ) {
+        self.id = id
+        self.email = email
+        self.appleUserIdentifier = appleUserIdentifier
+    }
+}
+extension User: Authenticatable {
+    struct Public: Content {
         let id: UUID
         let email: String
-
         init(user: User) throws {
-          self.id = try user.requireID()
-          self.email = user.email
+            self.id = try user.requireID()
+            self.email = user.email
         }
-      }
-
-      func asPublic() throws -> Public {
-        try .init(user: self)
-      }
     }
 
-    // MARK: - Token Creation
-    extension User {
-      func createAccessToken(req: Request) throws -> Token {
+    func asPublic() throws -> Public {
+        try .init(user: self)
+    }
+}
+
+
+extension User {
+    func createAccessToken(req: Request) throws -> Token {
         let expiryDate = Date() + ProjectConfig.AccessToken.expirationTime
         return try Token(
-          userID: requireID(),
-          token: [UInt8].random(count: 32).base64,
-          expiresAt: expiryDate
+            userID: requireID(),
+            token: [UInt8].random(count: 32).base64,
+            expiresAt: expiryDate
         )
-      }
-
     }
 
-    // MARK: - Helpers
-    extension User {
+}
 
 
-      static func findByEmail(_ email: String, req: Request) async throws -> User? {
+extension User {
+    static func findByEmail(_ email: String, req: Request) async throws -> User? {
         return try await User.query(on: req.db)
-          .filter(\.$email == email)
-          .first()
-      }
-
-      static func findByAppleIdentifier(_ identifier: String, req: Request) async throws -> User? {
-        return try await User.query(on: req.db)
-          .filter(\.$appleUserIdentifier == identifier)
-          .first()
-      }
+            .filter(\.$email == email)
+            .first()
     }
+
+    static func findByAppleIdentifier(_ identifier: String, req: Request) async throws -> User? {
+        return try await User.query(on: req.db)
+            .filter(\.$appleUserIdentifier == identifier)
+            .first()
+    }
+}
 

@@ -27,9 +27,9 @@ extension UserError: AbortError {
 
   var reason: String {
     switch self {
-    case .emailTaken: return "A user with this email address is already registered."
-    case .siwaEmailMissing: return "The email is missing from Apple Identity Token. Try to revoke access for this application on https://appleid.apple.com and try again."
-    case .siwaInvalidState: return "Invalid state."
+    case .emailTaken: return "이 이메일 이미 저장되어있는데요..?"
+    case .siwaEmailMissing: return "올바르지 않는 형식입니다. 다시보내주세요."
+    case .siwaInvalidState: return "Invalid state"
     }
   }
 }

@@ -3,10 +3,6 @@ import JWT
 import Vapor
 
 struct UserAPIController {
-    //  func getMeHandler(req: Request) throws -> UserResponse {
-    //    let user = try req.auth.require(User.self)
-    //    return try .init(user: user)
-    //  }
     func updatefirstProfile(req: Request) async throws -> GeneralResponse<VoidContent> {
         let user = try req.auth.require(User.self)
         do {

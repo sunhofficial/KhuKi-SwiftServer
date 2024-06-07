@@ -12,5 +12,4 @@ struct GeneralResponse<T: Content>: Content {
     var data: T?
 }
 struct VoidContent: Content {
-    
 }

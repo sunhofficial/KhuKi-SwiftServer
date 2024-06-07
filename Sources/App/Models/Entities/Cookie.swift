@@ -13,22 +13,15 @@ final class Cookie: Model, Content {
     init() {}
     @ID(key: .id)
     var id: UUID?
-    
-//    @Parent(key: "userID")
-//    var user: User
-
     @Field(key: "info")
     var info: String
-
     @Field(key: "type")
     var type: Int
-
     @Field(key: "gender")
     var gender: String
     // User ID를 저장할 옵셔널 필드 추가
     @Parent(key: "userID")
     var user: User
-
 
     init(id: UUID? = nil, info: String, type: Int, gender: String, user : User) {
         self.id = id
@@ -37,9 +30,4 @@ final class Cookie: Model, Content {
         self.gender = gender
         self.$user.id = user.id!
     }
-}
-
-struct UpdateCookie: Codable {
-    var info: String
-    var type: Int
 }
